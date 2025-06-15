@@ -1,0 +1,237 @@
+[
+  {
+    "Application": {
+      "SentToOfficialsDateTime": "2025-06-01T09:00:00Z",
+      "ApplicationNumber": "APP-001",
+      "MeasureId": "M01",
+      "ApplicationYear": 2025,
+      "InitialApplicationAmount": { "Amount": 1000000, "CurrencyType": "KZT" },
+      "ApplicationStatus": "SentToOfficials",
+      "Applicant": {
+        "ApplicantNameRu": "ООО Альфа",
+        "ApplicantNameKz": "ЖШС Альфа",
+        "ApplicantXin": "123456789012",
+        "ApplicantType": "Corporate",
+        "ApplicantCorporateInfo": {
+          "FirstPersonIin": "850101300123",
+          "FirstPersonFio": "Иванов И.И."
+        },
+        "ApplicantIndividualInfo": { "DocumentType": "", "DocumentNumber": "" },
+        "ApplicantEntrepreneurInfo": { "Iin": "", "Fio": "" }
+      },
+      "ApplicationOfficialOrgInfo": {
+        "Bin": "987654321098",
+        "NameRu": "Минфин",
+        "NameKz": "Қаржы министрлігі"
+      },
+      "ApplicationOperatorInfo": {
+        "Bin": "123123123123",
+        "NameRu": "Оператор 1",
+        "NameKz": "Оператор 1"
+      },
+      "ApplicationAddress": { "OblArId": "01", "RegionArId": "001" },
+      "Payments": [
+        {
+          "PaymentDate": "2025-06-05T12:00:00Z",
+          "PaymentAmount": 500000,
+          "PaymentCurrencyType": "KZT",
+          "BudgetProgram": {
+            "BudgetType": "Republic",
+            "BudgetProgramCode": "001",
+            "BudgetSubProgramCode": "001A",
+            "Specific": "General"
+          }
+        }
+      ],
+      "ApplicationCancelled": null,
+      "ApplicationAccepted": {
+        "AcceptDateTime": "2025-06-06T15:00:00Z",
+        "DecisionMakerIin": "870101350321"
+      },
+      "ApplicationRejected": null,
+      "ApplicationPaid": {
+        "FullPaidDateTime": "2025-06-10T10:00:00Z",
+        "FullPaidAmountInTg": 500000
+      },
+      "ApplicationUrl": { "Url": "https://example.com/applications/APP-001" }
+    }
+  },
+
+  {
+    "Application": {
+      "SentToOfficialsDateTime": "2025-05-20T08:30:00Z",
+      "ApplicationNumber": "APP-002",
+      "MeasureId": "M02",
+      "ApplicationYear": 2025,
+      "InitialApplicationAmount": { "Amount": 1500000, "CurrencyType": "USD" },
+      "ApplicationStatus": "Rejected",
+      "Applicant": {
+        "ApplicantNameRu": "ИП Сидоров",
+        "ApplicantNameKz": "ЖК Сидоров",
+        "ApplicantXin": "998877665544",
+        "ApplicantType": "Entrepreneur",
+        "ApplicantCorporateInfo": null,
+        "ApplicantIndividualInfo": null,
+        "ApplicantEntrepreneurInfo": {
+          "Iin": "870202400321",
+          "Fio": "Сидоров С.С."
+        }
+      },
+      "ApplicationOfficialOrgInfo": {
+        "Bin": "543210987654",
+        "NameRu": "Минэкономики",
+        "NameKz": "Экономика министрлігі"
+      },
+      "ApplicationOperatorInfo": {
+        "Bin": "789789789789",
+        "NameRu": "Оператор 2",
+        "NameKz": "Оператор 2"
+      },
+      "ApplicationAddress": { "OblArId": "02", "RegionArId": "005" },
+      "Payments": [],
+      "ApplicationCancelled": null,
+      "ApplicationAccepted": null,
+      "ApplicationRejected": {
+        "RejectDateTime": "2025-05-25T11:00:00Z",
+        "RejectReasonType": "DocumentsIssues",
+        "DecisionMakerIin": "900101500123"
+      },
+      "ApplicationPaid": null,
+      "ApplicationUrl": { "Url": "https://example.com/applications/APP-002" }
+    }
+  },
+
+  {
+    "Application": {
+      "SentToOfficialsDateTime": "2025-04-15T13:45:00Z",
+      "ApplicationNumber": "APP-003",
+      "MeasureId": "M03",
+      "ApplicationYear": 2024,
+      "InitialApplicationAmount": { "Amount": 2000000, "CurrencyType": "EUR" },
+      "ApplicationStatus": "Cancelled",
+      "Applicant": {
+        "ApplicantNameRu": "ТОО Гамма",
+        "ApplicantNameKz": "ЖШС Гамма",
+        "ApplicantXin": "112233445566",
+        "ApplicantType": "Corporate",
+        "ApplicantCorporateInfo": {
+          "FirstPersonIin": "860303300456",
+          "FirstPersonFio": "Казаков К.К."
+        },
+        "ApplicantIndividualInfo": null,
+        "ApplicantEntrepreneurInfo": null
+      },
+      "ApplicationOfficialOrgInfo": {
+        "Bin": "111122223333",
+        "NameRu": "Мининфраструктуры",
+        "NameKz": "Инфрақұрылым министрлігі"
+      },
+      "ApplicationOperatorInfo": {
+        "Bin": "444455556666",
+        "NameRu": "Оператор 3",
+        "NameKz": "Оператор 3"
+      },
+      "ApplicationAddress": { "OblArId": "03", "RegionArId": "010" },
+      "Payments": [],
+      "ApplicationCancelled": {
+        "CancelDateTime": "2025-04-20T09:00:00Z",
+        "Note": "Отказ клиента",
+        "DecisionMakerIin": "860101300789"
+      },
+      "ApplicationAccepted": null,
+      "ApplicationRejected": null,
+      "ApplicationPaid": null,
+      "ApplicationUrl": { "Url": "https://example.com/applications/APP-003" }
+    }
+  },
+
+  {
+    "Application": {
+      "SentToOfficialsDateTime": null,
+      "ApplicationNumber": "APP-004",
+      "MeasureId": "M04",
+      "ApplicationYear": 2025,
+      "InitialApplicationAmount": null,
+      "ApplicationStatus": "Draft",
+      "Applicant": {
+        "ApplicantNameRu": "ИП Петрова",
+        "ApplicantNameKz": "ЖК Петрова",
+        "ApplicantXin": "556677889900",
+        "ApplicantType": "Individual",
+        "ApplicantCorporateInfo": null,
+        "ApplicantIndividualInfo": {
+          "DocumentType": "ID",
+          "DocumentNumber": "AB1234567"
+        },
+        "ApplicantEntrepreneurInfo": null
+      },
+      "ApplicationOfficialOrgInfo": null,
+      "ApplicationOperatorInfo": null,
+      "ApplicationAddress": null,
+      "Payments": [],
+      "ApplicationCancelled": null,
+      "ApplicationAccepted": null,
+      "ApplicationRejected": null,
+      "ApplicationPaid": null,
+      "ApplicationUrl": { "Url": "" }
+    }
+  },
+
+  {
+    "Application": {
+      "SentToOfficialsDateTime": "2025-06-10T14:00:00Z",
+      "ApplicationNumber": "APP-005",
+      "MeasureId": "M05",
+      "ApplicationYear": 2023,
+      "InitialApplicationAmount": { "Amount": 300000, "CurrencyType": "KZT" },
+      "ApplicationStatus": "Paid",
+      "Applicant": {
+        "ApplicantNameRu": "ТОО Бета",
+        "ApplicantNameKz": "ЖШС Бета",
+        "ApplicantXin": "334455667788",
+        "ApplicantType": "Corporate",
+        "ApplicantCorporateInfo": {
+          "FirstPersonIin": "870808400456",
+          "FirstPersonFio": "Мухамедов М.М."
+        },
+        "ApplicantIndividualInfo": null,
+        "ApplicantEntrepreneurInfo": null
+      },
+      "ApplicationOfficialOrgInfo": {
+        "Bin": "555566667777",
+        "NameRu": "Минсоцразвития",
+        "NameKz": "Әлеуметтік даму министрлігі"
+      },
+      "ApplicationOperatorInfo": {
+        "Bin": "777788889999",
+        "NameRu": "Оператор 4",
+        "NameKz": "Оператор 4"
+      },
+      "ApplicationAddress": { "OblArId": "04", "RegionArId": "015" },
+      "Payments": [
+        {
+          "PaymentDate": "2025-06-11T08:00:00Z",
+          "PaymentAmount": 300000,
+          "PaymentCurrencyType": "KZT",
+          "BudgetProgram": {
+            "BudgetType": "Local",
+            "BudgetProgramCode": "123",
+            "BudgetSubProgramCode": "456B",
+            "Specific": "Special Project"
+          }
+        }
+      ],
+      "ApplicationCancelled": null,
+      "ApplicationAccepted": {
+        "AcceptDateTime": "2025-06-10T14:30:00Z",
+        "DecisionMakerIin": "890101400456"
+      },
+      "ApplicationRejected": null,
+      "ApplicationPaid": {
+        "FullPaidDateTime": "2025-06-11T12:00:00Z",
+        "FullPaidAmountInTg": 300000
+      },
+      "ApplicationUrl": { "Url": "https://example.com/applications/APP-005" }
+    }
+  }
+]

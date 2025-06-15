@@ -1,8 +1,66 @@
 <button nz-button nzType="primary">Button Example</button>
 
-<nz-card nzTitle="Card example" style="width:300px;" [nzExtra]="extraTemplate">
-  <p>Card example with NG-ZORRO</p>
+<nz-card nzTitle="Application" style="width:300px;" [nzExtra]="extraTemplate">
+  <p>SentToOfficialsDateTime</p>
+  <p>AppNum</p>
+  <p>MeasureID</p>
+  <p>AppYear</p>
+  <p>InitialAppAmount</p> <!--Amount, CurrencyType-->
+  <p>AppStatus</p>
+  <h2><p>Applicant</p></h2>
+    <p>ApplNameRU</p>
+    <p>ApplNameKz</p>
+    <p>ApplXin</p>
+    <p>ApplType</p>
+    <h3><p>ApplCorpInfo</p></h3>
+      <p>FirstPIin</p>
+      <p>FirstPFio</p>
+    <h3><p>ApplIndInfo</p></h3>
+      <p>DocType</p>
+      <p>DocNum</p>
+    <h3><p>ApplEntrepInfo</p></h3>
+      <p>Iin</p>
+      <p>Fio</p>
+  <h2><p>AppOffOrgInfo</p></h2>
+    <p>Bin</p>
+    <p>NameRu</p>
+    <p>NameKz</p>
+  <h2><p>AppOperatorInfo</p></h2>
+    <p>Bin</p>  
+    <p>NameRu</p>
+    <p>NameKz</p>
+  <h2><p>AppAddress</p></h2>
+    <p>OblArId</p>  
+    <p>RegionArId</p>
+  <h2><p>Payments</p></h2>
+    <p>PayDate</p>
+    <p>PayAmount</p>
+    <p>PayCurrencyType</p>
+    <p>BudgetProgram</p>
+      <p>BudgetType</p>
+      <p>BudgProgCode</p>
+      <p>BudgSubProgCode</p>
+      <p>Specific</p>
+    <h2><p>AppCancelled</p></h2>
+      <p>CancelDateTime</p>
+      <p>Note</p>
+      <p>DesicionMakerIin</p>
+    <h2><p>AppAccepted</p></h2>
+      <p>AcceptDateTime</p>
+      <p>DesicionMakerIin</p>
+    <h2><p>AppRejected</p></h2>
+      <p>RejectDateTime</p>
+      <p>RejectReasonType</p>
+      <p>DesicionMakerIin</p>
+    <h2><p>AppPaid</p></h2>
+      <p>FullPaidDateTime</p>
+      <p>FullPaidAmountInTg</p>
+    <h2><p>AppURL</p></h2>
+      <p>Url</p>
+     
 </nz-card>
 <ng-template #extraTemplate>
-    <a>More</a>
+    <a>Edit</a>
 </ng-template>
+
+

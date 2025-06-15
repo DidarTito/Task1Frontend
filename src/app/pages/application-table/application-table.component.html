@@ -1,0 +1,148 @@
+<p>application-table works!</p>
+
+<nz-table [nzData]="applications" [nzBordered]="true">
+    <thead>
+        <tr>
+            <th>SentToOfficialsDateTime</th>
+            <th>ApplicationNumber</th>
+            <th>MeasureId</th>
+            <th>ApplicationYear</th>
+            <th>InitialApplicationAmount</th>
+            <th>Currency</th>
+
+            <th>ApplicantNameRu</th>
+            <th>ApplicantNameKz</th>
+            <th>ApplicantXin</th>
+            <th>ApplicantType</th>
+
+            <th>ApplicantCorporate FirstPersonIin</th>
+            <th>ApplicantCorporate FirstPersonFio</th>
+            <th>ApplicantIndividual DocType</th>
+            <th>ApplicantIndividual DocNum</th>
+            <th>ApplicantEntrepreneur Iin</th>
+            <th>ApplicantEntrepreneur Fio</th>
+            
+            <th>OfficialOrg Bin</th>
+            <th>OfficialOrg NameRu</th>
+            <th>OfficialOrg NameKz</th>
+            <th>OperatorOrg Bin</th>
+            <th>OperatorOrg NameRu</th>
+            <th>OperatorOrg NameKz</th>
+            <th>Address OblArId</th>
+            <th>Address RegionArId</th>
+
+            <th>PaymentDate</th>
+            <th>PaymentAmount</th>
+            <th>PaymentCurrencyType</th>
+            <th>BudgetType</th>
+            <th>BudgetProgramCode</th>
+            <th>BudgetSubProgramCode</th>
+            <th>Specific</th>
+
+            <th>Cancelled CancelDateTime</th>
+            <th>Cancelled Note</th>
+            <th>Cancelled DecisionMakerIin</th>
+            <th>Accepted AcceptDateTime</th>
+            <th>Accepted DecisionMakerIin</th>
+            <th>Rejected RejectDateTime</th>
+            <th>Rejected RejectReasonType</th>
+            <th>Rejected DecisionMakerIin</th>
+            <th>FullPaidDateTime</th>
+            <th>FullPaidAmountInTg</th>
+            <th>ApplicationUrl</th>
+
+            <th>Alter</th>
+            
+        </tr>
+    </thead>
+    <tbody>
+        <ng-container *ngIf="applications.length>0; else noData">
+            <tr *ngFor = "let app of applications">
+
+                <td>{{app.Application?.SentToOfficialsDateTime ?? '-'}}</td>
+                <td>{{app.Application?.ApplicationNumber ?? '-'}}</td>
+                <td>{{app.Application?.MeasureId ?? '-'}}</td>
+                <td>{{app.Application?.ApplicationYear ?? '-'}}</td>
+                <td>{{app.Application.InitialApplicationAmount?.Amount ?? '-'}}</td>
+                <td>{{app.Application.InitialApplicationAmount?.CurrencyType ?? '-'}}</td>
+                
+            <!---->
+                <td>{{app.Application.Applicant?.ApplicantNameRu ?? '-'}}</td>
+                <td>{{app.Application.Applicant?.ApplicantNameKz ?? '-'}}</td>
+                <td>{{app.Application.Applicant?.ApplicantXin ?? '-'}}</td>
+                <td>{{app.Application.Applicant?.ApplicantType ?? '-'}}</td>
+
+                <!--START-->
+
+                <td>{{app.Application.Applicant.ApplicantCorporateInfo?.FirstPersonIin}}</td>
+                <td>{{app.Application.Applicant.ApplicantCorporateInfo?.FirstPersonFio}}</td>
+
+                <td>{{app.Application.Applicant.ApplicantIndividualInfo?.DocumentType ?? '-'}}</td>
+                <td>{{app.Application.Applicant.ApplicantIndividualInfo?.DocumentNumber ?? '-'}}</td>
+
+                <td>{{app.Application.Applicant.ApplicantEntrepreneurInfo?.Iin ?? '-'}}</td>
+                <td>{{app.Application.Applicant.ApplicantEntrepreneurInfo?.Fio ?? '-'}}</td>
+
+                <!---->
+                <td>{{app.Application.ApplicationOfficialOrgInfo?.Bin ?? '-'}}</td>
+                <td>{{app.Application.ApplicationOfficialOrgInfo?.NameRu ?? '-'}}</td>
+                <td>{{app.Application.ApplicationOfficialOrgInfo?.NameKz ?? '-'}}</td>
+
+                <td>{{app.Application.ApplicationOperatorOrgInfo?.Bin ?? '-'}}</td>
+                <td>{{app.Application.ApplicationOperatorOrgInfo?.NameRu ?? '-'}}</td>
+                <td>{{app.Application.ApplicationOperatorOrgInfo?.NameKz ?? '-'}}</td>
+
+                <td>{{app.Application.ApplicationAddress?.OblArId ?? '-'}}</td>
+                <td>{{app.Application.ApplicationAddress?.RegionArId ?? '-'}}</td>
+
+                <!---->
+                <td>{{app.Application.Payments?.[0]?.PaymentDate | date: 'short' }}</td>
+                <td>{{app.Application.Payments?.[0]?.PaymentAmount ?? '-'}}</td>
+                <td>{{app.Application.Payments?.[0]?.PaymentCurrencyType ?? '-'}}</td>
+                <td>{{app.Application.Payments?.[0]?.BudgetProgram?.BudgetType ?? '-'}}</td>
+                <td>{{app.Application.Payments?.[0]?.BudgetProgram?.BudgetProgramCode ?? '-'}}</td>
+                <td>{{app.Application.Payments?.[0]?.BudgetProgram?.BudgetSubProgramCode ?? '-'}}</td>
+                <td>{{app.Application.Payments?.[0]?.BudgetProgram?.Specific ?? '-'}}</td>
+
+                <!---->
+                <td>{{app.Application.ApplicationCancelled?.CancelDateTime| date: 'short'}}</td>
+                <td>{{app.Application.ApplicationCancelled?.Note ?? '-'}}</td>
+                <td>{{app.Application.ApplicationCancelled?.DecisionMakerIin ?? '-'}}</td>
+
+                <td>{{app.Application.ApplicationAccepted?.AcceptDateTime| date: 'short'}}</td>
+                <td>{{app.Application.ApplicationAccepted?.DecisionMakerIin ?? '-'}}</td>
+
+                <td>{{app.Application.ApplicationRejected?.RejectDateTime| date: 'short'}}</td>
+                <td>{{app.Application.ApplicationRejected?.RejectReasonType ?? '-'}}</td>
+                <td>{{app.Application.ApplicationRejected?.DecisionMakerIin ?? '-'}}</td>
+
+                <td>{{app.Application.ApplicationPaid?.FullPaidDateTime| date: 'short'}}</td>
+                <td>{{app.Application.ApplicationPaid?.FullPaidAmountInTg ?? '-'}}</td>
+                
+                <!--END-->
+                <td>
+                    <a *ngIf="app.Application.ApplicationUrl?.Url" [href]="app.Application.ApplicationUrl.Url" target="_blank">
+                        Url link
+                    </a>
+                    <span *ngIf="!app.Application.ApplicationUrl?.Url">-</span>
+                </td>
+                <td>
+                    <button nz-button nzType="primary" [nzSize]="size">
+                        <nz-icon nzType="edit" />Edit
+                    </button>
+                    <button nz-button nzType="primary" nzDanger="Delete?" [nzSize]="size">
+                        <nz-icon nzType="delete" />Delete
+                    </button>
+                </td>
+                <!-- <td [nzExpand]="expandSet.has(app.Application.Applicant.ApplicantCorporateInfo?.FirstPersonIin)">
+                    <nz-table-expand [nzExpand]="true"></nz-table-expand>
+                </td> -->
+            </tr>
+        </ng-container>
+        <ng-template #noData>
+            <tr>
+                <td colspan="999">No data found</td>
+            </tr>
+        </ng-template>
+    </tbody>
+</nz-table>
