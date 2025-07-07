@@ -3,7 +3,6 @@ import { Component, OnInit } from '@angular/core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzTableModule } from 'ng-zorro-antd/table';
 
-
 import { FormsModule } from '@angular/forms';
 
 import { NzButtonSize } from 'ng-zorro-antd/button';
@@ -13,6 +12,13 @@ import { NzRadioModule } from 'ng-zorro-antd/radio';
 import { HttpClient, provideHttpClient, withFetch } from '@angular/common/http';
 import { error } from 'console';
 
+import { NzCollapseModule } from 'ng-zorro-antd/collapse';
+import { NzModalModule, NzModalService } from 'ng-zorro-antd/modal';
+import { Injectable, Input } from '@angular/core';
+
+import { NgIf, NgFor, AsyncPipe } from '@angular/common';
+
+import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 
 interface Application{
   Application: {    
@@ -24,6 +30,7 @@ interface Application{
       Amount: number;
       CurrencyType: string;
     } | null;
+    ApplicationStatus: string,
 
     Applicant: {
       ApplicantNameRu: string;
@@ -102,21 +109,36 @@ interface Application{
   selector: 'app-application-table',
   standalone: true,
   imports: [CommonModule, NzTableModule, NzButtonModule, 
-    FormsModule, NzButtonModule, NzIconModule, NzRadioModule,
+    FormsModule, NzButtonModule, NzIconModule, NzRadioModule,NzCollapseModule, NzModalModule, NgIf, NgFor,
+    NzDrawerModule,
   ],
   templateUrl: './application-table.component.html',
   styleUrl: './application-table.component.css'
 })
 export class ApplicationTableComponent implements OnInit {
+
+  
+
+  onDelete(app: Application): void {
+    this.modal.confirm({
+      nzTitle: '',
+      nzContent: '',
+      nzOkText: 'Yes',
+      nzOkDanger: true,
+      nzOnOk: ()=> {
+        this.applications = this.applications.filter(a => a.Application.ApplicationNumber !== app.Application.ApplicationNumber);
+      },
+      nzCancelText: 'No'
+    });
+  }
+
+  onEdit(app: Application): void {
+    console.log('Edit application', app);
+  }
   applications: Application[]=[];
   size: NzButtonSize = 'large';
 
-
-  // ngOnInit(): void {
-  //     const data = localStorage.getItem('applications');
-  //     this.applications = data ? JSON.parse(data) : [];
-  // }
-  constructor (private http: HttpClient){}
+  constructor (private http: HttpClient, private modal: NzModalService){}
   ngOnInit(): void {
       this.http.get<Application[]>('assets/applications.json').subscribe({
         next: (data) => {
@@ -126,5 +148,106 @@ export class ApplicationTableComponent implements OnInit {
       });
   }
 
+  expandedSet = new Set<number>();
+
+  toggleExpand(index: number): void {
+    if (this.expandedSet.has(index)) {
+      this.expandedSet.delete(index);
+    } else {
+      this.expandedSet.add(index);
+    }
+  }
+  // 
+
+  @Input() collapsed = false;
+
+  animating = false;
+
+
+  toggle(event: any){
+    if (this.animating){
+      return;
+    }
+    this.animating = true;
+
+    if(this.collapsed){
+      this.collapsed = false;
+    }
+    else{
+      this.collapsed = true;
+    }
+
+    event.preventDefault();
+  }
+
+  onToggleDone(){
+    this.animating = false;
+  }
+
+  isDrawerVisible = false;
+  
+  isDrawerVisible2 = false;
+  
+  selectedApplication: any;
+openDrawer(app: Application): void {
+
+  this.selectedApplication = app;
+  this.isDrawerVisible = true;
+}
+openDrawer2(app: Application): void {
+  this.selectedApplication = app;
+  this.isDrawerVisible2 = true;
+}
+
+
+  closeDrawer(): void {
+    this.isDrawerVisible = false;
+    this.isDrawerVisible2 = false;
+    
+    this.selectedApplication = null;
+  }
+
+  // onEdit(app: any): void {
+  //   console.log('Edit clicked for:', app);
+  //   // Implement your edit logic (open form, navigate, etc.)
+  // }
+
+  // Optional: Save or delete handlers for drawer content
+  saveChanges(): void {
+    console.log('Save clicked for:', this.selectedApplication);
+    // Implement your save logic here
+  }
+
+  // onDelete(app: any): void {
+  // this.modal.confirm({
+  //   nzTitle: 'Are you sure you want to delete this application?',
+  //   nzContent: `Application Number: ${app.Application.ApplicationNumber}`,
+  //   nzOkText: 'Yes',
+  //   nzOkDanger: true,
+  //   nzOnOk: () => {
+  //     this.applications = this.applications.filter(
+  //       a => a.Application.ApplicationNumber !== app.Application.ApplicationNumber
+  //     );
+  //   },
+  //   nzCancelText: 'No'
+  // });
+  // }
+confirmDelete(): void {
+  if (!this.selectedApplication) return;
+
+  this.modal.confirm({
+    nzTitle: 'Delete this application?',
+    nzContent: `Are you sure you want to delete Application #${this.selectedApplication.Application.ApplicationNumber}?`,
+    nzOkText: 'Yes',
+    nzOkDanger: true,
+    nzOnOk: () => {
+      this.applications = this.applications.filter(
+        a => a.Application.ApplicationNumber !== this.selectedApplication.Application.ApplicationNumber
+      );
+      this.closeDrawer();
+    },
+    nzCancelText: 'No'
+  });
+}
 
 }
