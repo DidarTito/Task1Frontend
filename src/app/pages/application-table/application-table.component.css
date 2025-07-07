@@ -183,11 +183,11 @@
 }
 
 /* Ensure pagination controls are visible */
-.ant-pagination {
+/* .ant-pagination {
   margin-top: 16px;
   display: flex;
   justify-content: center;
-}
+} */
 
 /* Sorting header styling */
 th {
@@ -392,4 +392,60 @@ th nz-icon {
 /* Empty State Handling */
 .section:empty {
   display: none;
+}
+
+.search-container {
+  position: relative;
+  margin-bottom: 20px;
+  max-width: 400px;
+}
+
+.search-container input {
+  width: 100%;
+  padding: 10px 15px 10px 40px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.search-container .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #bfbfbf;
+}
+
+th {
+  cursor: pointer;
+  position: relative;
+  user-select: none;
+}
+
+th:hover {
+  background-color: #f0f5ff;
+}
+
+.sort-icon {
+  position: absolute;
+  right: 8px;
+  font-style: normal;
+}
+
+.no-data {
+  text-align: center;
+  padding: 30px;
+  color: #8c8c8c;
+  font-style: italic;
+}
+
+nz-pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.pagination-container{
+  width: 100%;
+  justify-content: center;
 }
