@@ -121,6 +121,7 @@ interface Application {
   styleUrl: './application-table.component.css'
 })
 export class ApplicationTableComponent implements OnInit {
+
   // Pagination properties
   pageIndex = 1;
   pageSize = 10;
