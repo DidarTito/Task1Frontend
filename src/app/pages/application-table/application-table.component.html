@@ -1,11 +1,21 @@
 <div class="application-table-container">
-  <!-- Search Filter -->
-  <div class="search-container">
-    <input type="text" [(ngModel)]="searchTerm" (input)="applyFilter()" placeholder="Search applications...">
-    <i class="search-icon">🔍</i>
+  <div class="table-toolbar">
+    <!-- Search Input -->
+    <div class="search-container">
+      <input type="text" [(ngModel)]="searchTerm" (input)="applyFilter()" placeholder="Search applications..." />
+      <i class="search-icon">🔍</i>
+    </div>
+
+    <!-- Buttons Aligned Right -->
+    <div class="header-actions">
+      <button nz-button nzType="primary" (click)="openAddDialog()">➕ <span>Add Application</span></button>
+      <button nz-button nzType="default" (click)="exportToJson()">
+        <i nz-icon></i> Экспорт JSON
+      </button>
+    </div>
   </div>
 
-  <nz-table [nzData]="applications" [nzBordered]="true" #table *ngIf="applications?.length" [nzSize]="'small'"
+  <nz-table [nzData]="displayApplications" [nzBordered]="true" #table [nzSize]="'small'"
     [nzScroll]="{ x: 'max-content' }" class="app-table" [nzShowPagination]="false">
     <thead>
       <tr>
@@ -86,27 +96,20 @@
               </button>
             </td>
 
-            <td data-label="Sent To Officials">{{app.Application?.SentToOfficialsDateTime ?? '-'}}</td>
-            <td data-label="App Number">{{app.Application?.ApplicationNumber ?? '-'}}</td>
-            <td data-label="Measure ID">{{app.Application?.MeasureId ?? '-'}}</td>
-            <td data-label="Year">{{app.Application?.ApplicationYear ?? '-'}}</td>
-            <td data-label="Amount">{{app?.Application?.InitialApplicationAmount?.Amount ?? '-'}}</td>
-            <td data-label="Currency">{{app.Application.InitialApplicationAmount?.CurrencyType ?? '-'}}</td>
+            <td data-label="Sent To Officials">{{app?.Application?.SentToOfficialsDateTime ?? '-'}}</td>
+            <td data-label="App Number">{{app?.Application?.ApplicationNumber ?? '-'}}</td>
+            <td data-label="Measure ID">{{app?.Application?.MeasureId ?? '-'}}</td>
+            <td data-label="Year">{{app?.Application?.ApplicationYear ?? '-'}}</td>
+            <td data-label="Amount">{{ app.Application.InitialApplicationAmount?.Amount}}</td>
+            <td data-label="Currency">{{ app.Application.InitialApplicationAmount?.CurrencyType}}</td>
+
             <td>
-              <span class="status-cell" [ngClass]="'status-' + (app.Application?.ApplicationStatus | lowercase)">
-                {{app.Application?.ApplicationStatus ?? '-'}}
+              <span class="status-cell" [ngClass]="'status-' + (app?.Application?.ApplicationStatus | lowercase)">
+                {{app?.Application?.ApplicationStatus ?? '-'}}
               </span>
             </td>
 
-            <!---->
-            <!--END-->
-            <td data-label="Application URL">
-              <a *ngIf="app.Application.ApplicationUrl?.Url" [href]="app.Application.ApplicationUrl.Url"
-                class="url-link" target="_blank">
-                Open Link
-              </a>
-              <span *ngIf="!app.Application.ApplicationUrl?.Url">-</span>
-            </td>
+            <td>{{ app?.Application?.ApplicationUrl?.Url ?? '-' }}</td>
 
             <td class="action-cell">
               <button class="btn btn-edit" nz-button (click)="openDrawer(app)">
@@ -122,14 +125,6 @@
       </ng-container>
 
 
-      <!-- Pagination -->
-
-      <div class="pagination-container">
-        <nz-pagination [nzPageIndex]="pageIndex" [nzPageSize]="pageSize" [nzTotal]="totalApplications"
-          [nzShowSizeChanger]="true" [nzPageSizeOptions]="[5, 10, 20, 50]" (nzPageIndexChange)="onPageChange($event)"
-          (nzPageSizeChange)="onPageSizeChange($event)">
-        </nz-pagination>
-      </div>
 
       <nz-drawer [nzVisible]="isDrawerVisible" nzTitle="Application Details" nzPlacement="right" [nzWidth]="'80vw'"
         (nzOnClose)="closeDrawer()">
@@ -143,31 +138,37 @@
                 <label class="form-group">
                   Sent To Officials:
                   <input type="datetime-local" [(ngModel)]="sel_app.SentToOfficialsDateTime"
-                    name="SentToOfficialsDateTime" />
+                    name="SentToOfficialsDateTime" required />
                 </label>
                 <label class="form-group">
                   Application Number:
-                  <input type="text" [(ngModel)]="sel_app.ApplicationNumber" name="ApplicationNumber" />
+                  <input type="text" [(ngModel)]="sel_app.ApplicationNumber" name="ApplicationNumber" required />
                 </label>
                 <label class="form-group">
                   Measure ID:
-                  <input type="text" [(ngModel)]="sel_app.MeasureId" name="MeasureId" />
+                  <input type="text" [(ngModel)]="sel_app.MeasureId" name="MeasureId" required />
                 </label>
                 <label class="form-group">
                   Application Year:
-                  <input type="number" [(ngModel)]="sel_app.ApplicationYear" name="ApplicationYear" />
+                  <input type="number" [(ngModel)]="sel_app.ApplicationYear" name="ApplicationYear" required />
                 </label>
                 <label class="form-group">
                   Amount:
-                  <input type="number" [(ngModel)]="sel_app.InitialApplicationAmount.Amount" name="Amount" />
+                  <input type="number" [(ngModel)]="sel_app.InitialApplicationAmount.Amount" name="Amount" required />
                 </label>
                 <label class="form-group">
                   Currency:
-                  <input type="text" [(ngModel)]="sel_app.InitialApplicationAmount.CurrencyType" name="Currency" />
+                  <input type="text" [(ngModel)]="sel_app.InitialApplicationAmount.CurrencyType" name="Currency"
+                    required />
                 </label>
                 <label class="form-group">
-                  Status:
-                  <input type="text" [(ngModel)]="sel_app.ApplicationStatus" name="ApplicationStatus" />
+                  Application Status:
+                  <select [(ngModel)]="applicationStatus" name="ApplicationStatus"
+                    (ngModelChange)="onStatusChange($event)" required>
+                    <option value="Accepted">✅ Accepted</option>
+                    <option value="Rejected">🚫 Rejected</option>
+                    <option value="Cancelled">❌ Cancelled</option>
+                  </select>
                 </label>
               </div>
 
@@ -176,121 +177,135 @@
                 <h3 class="section__title">🙍 Applicant Info</h3>
                 <label class="form-group">
                   Name (RU):
-                  <input type="text" [(ngModel)]="sel_app.Applicant.ApplicantNameRu" name="ApplicantNameRu" />
+                  <input type="text" [(ngModel)]="sel_app.Applicant.ApplicantNameRu" name="ApplicantNameRu" required />
                 </label>
                 <label class="form-group">
                   Name (KZ):
-                  <input type="text" [(ngModel)]="sel_app.Applicant.ApplicantNameKz" name="ApplicantNameKz" />
+                  <input type="text" [(ngModel)]="sel_app.Applicant.ApplicantNameKz" name="ApplicantNameKz" required />
                 </label>
                 <label class="form-group">
                   Xin:
-                  <input type="text" [(ngModel)]="sel_app.Applicant.ApplicantXin" name="ApplicantXin" />
+                  <input type="text" [(ngModel)]="sel_app.Applicant.ApplicantXin" name="ApplicantXin" required />
                 </label>
                 <label class="form-group">
                   Type:
-                  <input type="text" [(ngModel)]="sel_app.Applicant.ApplicantType" name="ApplicantType" />
+                  <select [(ngModel)]="sel_app.Applicant.ApplicantType" name="ApplicantType" required
+                    (ngModelChange)="onApplicantTypeChange($event)" required>
+                    <option [ngValue]="'Individual'">🙍 Individual</option>
+                    <option [ngValue]="'Corporate'">👔 Corporate</option>
+                    <option [ngValue]="'Entrepreneur'">📛 Entrepreneur</option>
+                  </select>
                 </label>
 
+
+
                 <!-- Corporate Info -->
-                <ng-container *ngIf="sel_app?.Applicant?.ApplicantCorporateInfo as corp">
-                  <ng-container *ngIf="corp?.FirstPersonIin || corp?.FirstPersonFio">
-                    <br>
-                    <h4 class="subsection__title">👔 Corporate Info</h4>
-                    <br>
-                    <label class="form-group">
-                      IIN:
-                      <input type="text" [(ngModel)]="corp.FirstPersonIin" name="FirstPersonIin" />
-                    </label>
-                    <label class="form-group">
-                      FIO:
-                      <input type="text" [(ngModel)]="corp.FirstPersonFio" name="FirstPersonFio" />
-                    </label>
+                <div *ngIf="sel_app.Applicant.ApplicantType === 'Corporate'">
+                  <ng-container *ngIf="sel_app?.Applicant?.ApplicantCorporateInfo as corp">
+                    <ng-container *ngIf="corp?.FirstPersonIin || corp?.FirstPersonFio">
+                      <h4 class="subsection__title">👔 Corporate Info</h4>
+                      <label class="form-group">
+                        IIN:
+                        <input type="text" [(ngModel)]="corp.FirstPersonIin" name="FirstPersonIin" required />
+                      </label>
+                      <label class="form-group">
+                        FIO:
+                        <input type="text" [(ngModel)]="corp.FirstPersonFio" name="FirstPersonFio" required />
+                      </label>
+                    </ng-container>
                   </ng-container>
-                </ng-container>
+                </div>
 
                 <!-- Individual Info -->
-                <ng-container *ngIf="sel_app?.Applicant?.ApplicantIndividualInfo as indiv">
-                  <ng-container *ngIf="indiv?.DocumentType || indiv?.DocumentNumber">
-                    <h4 class="subsection__title">🧾 Individual Info</h4>
-                    <label class="form-group">
-                      Document Type:
-                      <input type="text" [(ngModel)]="indiv.DocumentType" name="DocumentType" />
-                    </label>
-                    <label class="form-group">
-                      Document Number:
-                      <input type="text" [(ngModel)]="indiv.DocumentNumber" name="DocumentNumber" />
-                    </label>
+                <div *ngIf="sel_app.Applicant.ApplicantType === 'Individual'">
+                  <ng-container *ngIf="sel_app?.Applicant?.ApplicantIndividualInfo as indiv">
+                    <ng-container *ngIf="indiv?.DocumentType || indiv?.DocumentNumber">
+
+                      <h4 class="subsection__title">🧾 Individual Info</h4>
+
+                      <label class="form-group">
+                        Document Type:
+                        <input type="text" [(ngModel)]="indiv.DocumentType" name="DocumentType" required />
+                      </label>
+                      <label class="form-group">
+                        Document Number:
+                        <input type="text" [(ngModel)]="indiv.DocumentNumber" name="DocumentNumber" required />
+                      </label>
+                    </ng-container>
                   </ng-container>
-                </ng-container>
+                </div>
 
                 <!-- Entrepreneur Info -->
-                <div *ngIf="sel_app?.Applicant?.ApplicantEntrepreneurInfo as ent">
-                  <ng-container *ngIf="ent?.Iin || ent?.Fio">
-                    <h4 class="subsection__title">📛 Entrepreneur Info</h4>
-                    <label class="form-group">
-                      IIN:
-                      <input type="text" [(ngModel)]="ent.Iin" name="EntrepreneurIin" />
-                    </label>
-                    <label class="form-group">
-                      FIO:
-                      <input type="text" [(ngModel)]="ent.Fio" name="EntrepreneurFio" />
-                    </label>
+
+                <div *ngIf="sel_app.Applicant.ApplicantType === 'Entrepreneur'">
+                  <ng-container *ngIf="sel_app?.Applicant?.ApplicantEntrepreneurInfo as ent">
+                    <ng-container *ngIf="ent?.Iin || ent?.Fio">
+                      <h4 class="subsection__title">📛 Entrepreneur Info</h4>
+                      <label class="form-group">
+                        IIN:
+                        <input type="text" [(ngModel)]="ent.Iin" name="EntrepreneurIin" required />
+                      </label>
+                      <label class="form-group">
+                        FIO:
+                        <input type="text" [(ngModel)]="ent.Fio" name="EntrepreneurFio" required />
+                      </label>
+                    </ng-container>
                   </ng-container>
                 </div>
               </div>
 
               <!-- 🏢 Official Org Info -->
-              <div *ngIf="sel_app?.ApplicationOfficialOrgInfo as org" class="section section--org-official">
+              <ng-container *ngIf="sel_app?.ApplicationOfficialOrgInfo as org" class="section section--org-official">
                 <ng-container *ngIf="org?.Bin || org?.NameRu || org?.NameKz">
                   <h3 class="section__title">🏢 Official Org Info</h3>
                   <label class="form-group">
                     BIN:
-                    <input type="text" [(ngModel)]="org.Bin" name="OfficialBin" />
+                    <input type="text" [(ngModel)]="org.Bin" name="OfficialBin" required />
                   </label>
                   <label class="form-group">
                     Name (RU):
-                    <input type="text" [(ngModel)]="org.NameRu" name="OfficialNameRu" />
+                    <input type="text" [(ngModel)]="org.NameRu" name="OfficialNameRu" required />
                   </label>
                   <label class="form-group">
                     Name (KZ):
-                    <input type="text" [(ngModel)]="org.NameKz" name="OfficialNameKz" />
+                    <input type="text" [(ngModel)]="org.NameKz" name="OfficialNameKz" required />
                   </label>
                 </ng-container>
-              </div>
+              </ng-container>
 
               <!-- 🏢 Operator Org Info -->
-              <div *ngIf="sel_app?.ApplicationOperatorOrgInfo as op" class="section section--org-operator">
+              <ng-container *ngIf="sel_app?.ApplicationOperatorInfo as op" class="section section--org-operator">
                 <ng-container *ngIf="op?.Bin || op?.NameRu || op?.NameKz">
                   <h3 class="section__title">🏢 Operator Org Info</h3>
                   <label class="form-group">
                     BIN:
-                    <input type="text" [(ngModel)]="op.Bin" name="OperatorBin" />
+                    <input type="text" [(ngModel)]="op.Bin" name="OperatorBin" required />
                   </label>
                   <label class="form-group">
                     Name (RU):
-                    <input type="text" [(ngModel)]="op.NameRu" name="OperatorNameRu" />
+                    <input type="text" [(ngModel)]="op.NameRu" name="OperatorNameRu" required />
                   </label>
                   <label class="form-group">
                     Name (KZ):
-                    <input type="text" [(ngModel)]="op.NameKz" name="OperatorNameKz" />
+                    <input type="text" [(ngModel)]="op.NameKz" name="OperatorNameKz" required />
                   </label>
                 </ng-container>
-              </div>
+              </ng-container>
 
               <!-- 📍 Address Info -->
-              <div *ngIf="sel_app?.ApplicationAddress as addr" class="section section--address">
+              <ng-container *ngIf="sel_app?.ApplicationAddress as addr" class="section section--address">
                 <ng-container *ngIf="addr?.OblArId || addr?.RegionArId">
                   <h3 class="section__title">📍 Application Address</h3>
                   <label class="form-group">
                     OblArId:
-                    <input type="text" [(ngModel)]="addr.OblArId" name="OblArId" />
+                    <input type="text" [(ngModel)]="addr.OblArId" name="OblArId" required />
                   </label>
                   <label class="form-group">
                     RegionArId:
-                    <input type="text" [(ngModel)]="addr.RegionArId" name="RegionArId" />
+                    <input type="text" [(ngModel)]="addr.RegionArId" name="RegionArId" required />
                   </label>
                 </ng-container>
-              </div>
+              </ng-container>
 
               <!-- 💰 Payment Info -->
               <div *ngIf="sel_app?.Payments?.[0] as payment" class="section section--payment">
@@ -298,87 +313,86 @@
                   <h3 class="section__title">💰 Payment Info</h3>
                   <label class="form-group">
                     Payment Date:
-                    <input type="datetime-local" [(ngModel)]="payment.PaymentDate" name="PaymentDate" />
+                    <input type="datetime-local" [(ngModel)]="payment.PaymentDate" name="PaymentDate" required />
                   </label>
                   <label class="form-group">
                     Payment Amount:
-                    <input type="number" [(ngModel)]="payment.PaymentAmount" name="PaymentAmount" />
+                    <input type="number" [(ngModel)]="payment.PaymentAmount" name="PaymentAmount" required />
                   </label>
                   <label class="form-group">
                     Currency:
-                    <input type="text" [(ngModel)]="payment.PaymentCurrencyType" name="PaymentCurrencyType" />
+                    <input type="text" [(ngModel)]="payment.PaymentCurrencyType" name="PaymentCurrencyType" required />
                   </label>
                   <label class="form-group">
                     Budget Type:
-                    <input type="text" [(ngModel)]="payment.BudgetProgram.BudgetType" name="BudgetType" />
+                    <input type="text" [(ngModel)]="payment.BudgetProgram.BudgetType" name="BudgetType" required />
                   </label>
                   <label class="form-group">
                     Budget Code:
-                    <input type="text" [(ngModel)]="payment.BudgetProgram.BudgetProgramCode" name="BudgetProgramCode" />
+                    <input type="text" [(ngModel)]="payment.BudgetProgram.BudgetProgramCode" name="BudgetProgramCode"
+                      required />
                   </label>
                   <label class="form-group">
                     SubProgram Code:
                     <input type="text" [(ngModel)]="payment.BudgetProgram.BudgetSubProgramCode"
-                      name="BudgetSubProgramCode" />
+                      name="BudgetSubProgramCode" required />
                   </label>
                   <label class="form-group">
                     Specific:
-                    <input type="text" [(ngModel)]="payment.BudgetProgram.Specific" name="Specific" />
+                    <input type="text" [(ngModel)]="payment.BudgetProgram.Specific" name="Specific" required />
                   </label>
                 </ng-container>
               </div>
 
               <!-- ❌ Cancelled Info -->
-              <div *ngIf="sel_app?.ApplicationCancelled as cancelled" class="section section--cancelled">
-                <ng-container *ngIf="cancelled?.CancelDateTime || cancelled?.Note">
-                  <h3 class="section__title">❌ Cancelled Info</h3>
-                  <label class="form-group">
-                    Cancel Date:
-                    <input type="datetime-local" [(ngModel)]="cancelled.CancelDateTime" name="CancelDateTime" />
-                  </label>
-                  <label class="form-group">
-                    Note:
-                    <input type="text" [(ngModel)]="cancelled.Note" name="CancelNote" />
-                  </label>
-                  <label class="form-group">
-                    Decision Maker IIN:
-                    <input type="text" [(ngModel)]="cancelled.DecisionMakerIin" name="CancelIin" />
-                  </label>
-                </ng-container>
+              <div *ngIf="applicationStatus === 'Cancelled' && sel_app?.ApplicationCancelled as cancelled"
+                class="section section--cancelled">
+                <h3 class="section__title">❌ Cancelled Info</h3>
+                <label class="form-group">
+                  Cancel Date:
+                  <input type="datetime-local" [(ngModel)]="cancelled.CancelDateTime" name="CancelDateTime" required />
+                </label>
+                <label class="form-group">
+                  Note:
+                  <input type="text" [(ngModel)]="cancelled.Note" name="CancelNote" required />
+                </label>
+                <label class="form-group">
+                  Decision Maker IIN:
+                  <input type="text" [(ngModel)]="cancelled.DecisionMakerIin" name="CancelIin" required />
+                </label>
               </div>
 
+
               <!-- ✅ Accepted Info -->
-              <div *ngIf="sel_app?.ApplicationAccepted as accepted" class="section section--accepted">
-                <ng-container *ngIf="accepted?.AcceptDateTime || accepted?.DecisionMakerIin">
-                  <h3 class="section__title">✅ Accepted Info</h3>
-                  <label class="form-group">
-                    Accept Date:
-                    <input type="datetime-local" [(ngModel)]="accepted.AcceptDateTime" name="AcceptDateTime" />
-                  </label>
-                  <label class="form-group">
-                    Decision Maker IIN:
-                    <input type="text" [(ngModel)]="accepted.DecisionMakerIin" name="AcceptIin" />
-                  </label>
-                </ng-container>
+              <div *ngIf="applicationStatus === 'Accepted' && sel_app?.ApplicationAccepted as accepted"
+                class="section section--accepted">
+                <h3 class="section__title">✅ Accepted Info</h3>
+                <label class="form-group">
+                  Accept Date:
+                  <input type="datetime-local" [(ngModel)]="accepted.AcceptDateTime" name="AcceptDateTime" required />
+                </label>
+                <label class="form-group">
+                  Decision Maker IIN:
+                  <input type="text" [(ngModel)]="accepted.DecisionMakerIin" name="AcceptIin" required />
+                </label>
               </div>
 
               <!-- 🚫 Rejected Info -->
-              <div *ngIf="sel_app?.ApplicationRejected as rejected" class="section section--rejected">
-                <ng-container *ngIf="rejected?.RejectDateTime || rejected?.RejectReasonType">
-                  <h3 class="section__title">🚫 Rejected Info</h3>
-                  <label class="form-group">
-                    Reject Date:
-                    <input type="datetime-local" [(ngModel)]="rejected.RejectDateTime" name="RejectDateTime" />
-                  </label>
-                  <label class="form-group">
-                    Reason:
-                    <input type="text" [(ngModel)]="rejected.RejectReasonType" name="RejectReason" />
-                  </label>
-                  <label class="form-group">
-                    Decision Maker IIN:
-                    <input type="text" [(ngModel)]="rejected.DecisionMakerIin" name="RejectIin" />
-                  </label>
-                </ng-container>
+              <div *ngIf="applicationStatus === 'Rejected' && sel_app?.ApplicationRejected as rejected"
+                class="section section--rejected">
+                <h3 class="section__title">🚫 Rejected Info</h3>
+                <label class="form-group">
+                  Reject Date:
+                  <input type="datetime-local" [(ngModel)]="rejected.RejectDateTime" name="RejectDateTime" required />
+                </label>
+                <label class="form-group">
+                  Reason:
+                  <input type="text" [(ngModel)]="rejected.RejectReasonType" name="RejectReason" required />
+                </label>
+                <label class="form-group">
+                  Decision Maker IIN:
+                  <input type="text" [(ngModel)]="rejected.DecisionMakerIin" name="RejectIin" required />
+                </label>
               </div>
 
               <!-- 💵 Paid Info -->
@@ -387,11 +401,11 @@
                   <h3 class="section__title">💵 Paid Info</h3>
                   <label class="form-group">
                     Full Paid Date:
-                    <input type="datetime-local" [(ngModel)]="paid.FullPaidDateTime" name="FullPaidDateTime" />
+                    <input type="datetime-local" [(ngModel)]="paid.FullPaidDateTime" name="FullPaidDateTime" required />
                   </label>
                   <label class="form-group">
                     Amount in ₸:
-                    <input type="number" [(ngModel)]="paid.FullPaidAmountInTg" name="FullPaidAmountInTg" />
+                    <input type="number" [(ngModel)]="paid.FullPaidAmountInTg" name="FullPaidAmountInTg" required />
                   </label>
                 </ng-container>
               </div>
@@ -423,9 +437,9 @@
               <div class="field"><label class="field-label">Application Year:</label><span class="field-value">{{
                   sel_app.ApplicationYear }}</span></div>
               <div class="field"><label class="field-label">Amount:</label><span class="field-value">{{
-                  sel_app.InitialApplicationAmount?.Amount }}</span></div>
+                  sel_app.InitialApplicationAmount?.Amount?.Amount }}</span></div>
               <div class="field"><label class="field-label">Currency:</label><span class="field-value">{{
-                  sel_app.InitialApplicationAmount?.CurrencyType }}</span></div>
+                  sel_app.InitialApplicationAmount?.Amount?.CurrencyType }}</span></div>
               <div class="field"><label class="field-label">Status:</label><span class="field-value">{{
                   sel_app.ApplicationStatus }}</span></div>
             </div>
@@ -487,7 +501,7 @@
             </div>
 
             <!-- Operator Org Info -->
-            <div *ngIf="sel_app?.ApplicationOperatorOrgInfo as op" class="section">
+            <div *ngIf="sel_app?.ApplicationOperatorInfo as op" class="section">
               <ng-container *ngIf="op?.Bin || op?.NameRu || op?.NameKz">
                 <h3 class="section-title">🏢 Operator Org Info</h3>
                 <div class="field"><label class="field-label">BIN:</label><span class="field-value">{{ op.Bin }}</span>
@@ -590,4 +604,12 @@
     </tbody>
   </nz-table>
 
+  <!-- Pagination -->
+
+  <div class="pagination-container">
+    <nz-pagination [nzPageIndex]="pageIndex" [nzPageSize]="pageSize" [nzTotal]="totalApplications"
+      [nzShowSizeChanger]="true" [nzPageSizeOptions]="[5, 10, 20, 50]" (nzPageIndexChange)="onPageChange($event)"
+      (nzPageSizeChange)="onPageSizeChange($event)">
+    </nz-pagination>
+  </div>
 </div>

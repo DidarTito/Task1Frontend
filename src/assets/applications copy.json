@@ -205,8 +205,8 @@
       },
       "ApplicationAddress": { "OblArId": "05", "RegionArId": "020" },
       "Payments": [],
-        "ApplicationCancelled": null,
-        "ApplicationAccepted": null,
+      "ApplicationCancelled": null,
+      "ApplicationAccepted": null,
       "ApplicationRejected": {
         "RejectDateTime": "2025-03-20T16:00:00Z",
         "RejectReasonType": "IncompleteData",

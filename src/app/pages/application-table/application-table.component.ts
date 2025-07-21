@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { NzButtonModule } from 'ng-zorro-antd/button';
 import { NzTableModule } from 'ng-zorro-antd/table';
 
@@ -9,7 +9,7 @@ import { NzButtonSize } from 'ng-zorro-antd/button';
 import { NzIconModule } from 'ng-zorro-antd/icon';
 import { NzRadioModule } from 'ng-zorro-antd/radio';
 
-import { HttpClient, provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { error } from 'console';
 
 import { NzCollapseModule } from 'ng-zorro-antd/collapse';
@@ -21,7 +21,15 @@ import { NgIf, NgFor, AsyncPipe } from '@angular/common';
 import { NzDrawerModule } from 'ng-zorro-antd/drawer';
 
 
+
 import { NzPaginationModule } from 'ng-zorro-antd/pagination';
+import { NzNotificationService } from 'ng-zorro-antd/notification';
+
+import { Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
+
+import { HttpClient } from '@angular/common/http';
+
 
 
 interface Application {
@@ -30,7 +38,7 @@ interface Application {
     ApplicationNumber: string;
     MeasureId: string;
     ApplicationYear: number;
-    InitialApplicationAmount: {
+    InitialApplicationAmount?: {
       Amount: number;
       CurrencyType: string;
     } | null;
@@ -41,15 +49,15 @@ interface Application {
       ApplicantNameKz: string;
       ApplicantXin: string;
       ApplicantType: string;
-      ApplicantCorporateInfo: {
+      ApplicantCorporateInfo?: {
         FirstPersonIin: string;
         FirstPersonFio: string;
       };
-      ApplicantIndividualInfo: {
+      ApplicantIndividualInfo?: {
         DocumentType: string;
         DocumentNumber: string;
       };
-      ApplicantEntrepreneurInfo: {
+      ApplicantEntrepreneurInfo?: {
         Iin: string;
         Fio: string;
       };
@@ -60,7 +68,7 @@ interface Application {
       NameRu: string;
       NameKz: string;
     };
-    ApplicationOperatorOrgInfo: {
+    ApplicationOperatorInfo: {
       Bin: string;
       NameRu: string;
       NameKz: string;
@@ -104,9 +112,79 @@ interface Application {
       Url: string;
     };
 
-    toggle: number;
+    toggle?: number;
 
   }
+}
+
+@Injectable({ providedIn: 'root' })
+export class ApplicationStorageService {
+  private readonly storageKey = 'applications';
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
+  
+  setAll(apps: Application[]): void {
+    localStorage.setItem('applications', JSON.stringify(apps));
+  }
+  getAll(): Application[] {
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        const data = localStorage.getItem(this.storageKey);
+        if (!data) return [];
+
+        let apps = JSON.parse(data);
+
+        // Migrate old structure to new format
+        if (apps.length > 0 && !apps[0].Application) {
+          apps = apps.map((appData: any) => ({ Application: appData }));
+          this.saveAll(apps);
+        }
+
+        return apps;
+      } catch (e) {
+        console.error('Error parsing localStorage data', e);
+        return [];
+      }
+    }
+    return [];
+  }
+  add(application: Application): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const applications = this.getAll();
+      applications.push(application);
+      this.saveAll(applications);
+    }
+  }
+
+  update(updatedApp: Application): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const applications = this.getAll();
+      const index = applications.findIndex(app =>
+        app.Application.ApplicationNumber === updatedApp.Application.ApplicationNumber
+      );
+
+      if (index !== -1) {
+        applications[index] = updatedApp;
+        this.saveAll(applications);
+      }
+    }
+  }
+
+  delete(applicationNumber: string): void {
+    if (isPlatformBrowser(this.platformId)) {
+      let applications = this.getAll();
+      applications = applications.filter(app =>
+        app.Application.ApplicationNumber !== applicationNumber
+      );
+      this.saveAll(applications);
+    }
+  }
+
+  private saveAll(applications: Application[]): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.storageKey, JSON.stringify(applications));
+    }
+  }
+
 }
 
 @Component({
@@ -118,7 +196,8 @@ interface Application {
 
   ],
   templateUrl: './application-table.component.html',
-  styleUrl: './application-table.component.css'
+  styleUrl: './application-table.component.css',
+  host: { 'ngSkipHydration': ' ' } // ✅ Применяем корректно
 })
 export class ApplicationTableComponent implements OnInit {
 
@@ -128,17 +207,21 @@ export class ApplicationTableComponent implements OnInit {
   totalApplications = 0;
 
   // Sorting properties
-  sortColumn: string = '';
+  sortColumn: string = ' ';
   sortDirection: 'asc' | 'desc' = 'asc';
 
   // Filtering property
-  searchTerm: string = '';
+  searchTerm: string = ' ';
 
   // Component state
 
   filteredApplications: Application[] = [];
   sortedApplications: Application[] = [];
   displayApplications: Application[] = [];
+
+  // displayApplications!: Application[];
+
+  // displayApplications: any[] = [];
 
 
   ///
@@ -217,7 +300,7 @@ export class ApplicationTableComponent implements OnInit {
       case 'ApplicationYear':
         return app.Application.ApplicationYear;
       case 'Amount':
-        return app.Application.InitialApplicationAmount?.Amount;
+        return app.Application?.InitialApplicationAmount?.Amount;
       case 'Currency':
         return app.Application.InitialApplicationAmount?.CurrencyType;
       case 'ApplicationStatus':
@@ -255,25 +338,209 @@ export class ApplicationTableComponent implements OnInit {
     this.updateDisplayApplications();
   }
 
-  // Helper to update displayed applications
   private updateDisplayApplications(): void {
     const startIndex = (this.pageIndex - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
     this.displayApplications = this.sortedApplications.slice(startIndex, endIndex);
+
+    console.log('Paginating from', startIndex, 'to', endIndex);
+    console.log('Display applications:', this.displayApplications.length);
+
+    this.cdr.detectChanges();
   }
-  ///
+
+
+  // Добавление новой заявки
+  openAddDialog(applicantType: 'Individual' | 'Corporate' | 'Entrepreneur' = 'Individual'): void {
+    const newApp = this.createEmptyApplication(applicantType);
+    const nextNumber = this.generateApplicationNumber();
+    newApp.Application.ApplicationNumber = nextNumber;
+    this.isAddingNew = true;
+    this.selectedApplication = newApp;
+    this.isDrawerVisible = true;
+  }
+
+
+  private generateApplicationNumber(): string {
+    const currentYear = new Date().getFullYear();
+    const existingCount = this.applications.filter(
+      app => app.Application.ApplicationYear === currentYear
+    ).length;
+
+    const nextIndex = existingCount + 1;
+    return `${currentYear}-${nextIndex.toString().padStart(4, '0')}`; // e.g., "2025-0001"
+  }
+
+  onApplicantTypeChange(type: 'Individual' | 'Corporate' | 'Entrepreneur'): void {
+    const app = this.selectedApplication?.Application;
+    if (!app?.Applicant) return;
+
+    // Clear irrelevant info blocks
+    delete app.Applicant.ApplicantCorporateInfo;
+    delete app.Applicant.ApplicantIndividualInfo;
+    delete app.Applicant.ApplicantEntrepreneurInfo;
+
+
+    // Add selected one
+    if (type === 'Individual') {
+      app.Applicant.ApplicantIndividualInfo = { DocumentType: ' ', DocumentNumber: ' ' };
+    } else if (type === 'Corporate') {
+      app.Applicant.ApplicantCorporateInfo = { FirstPersonIin: ' ', FirstPersonFio: ' ' };
+    } else if (type === 'Entrepreneur') {
+      app.Applicant.ApplicantEntrepreneurInfo = { Iin: ' ', Fio: ' ' };
+    }
+  }
+
+  applicationStatus: 'Accepted' | 'Rejected' | 'Cancelled' = 'Accepted';
+
+  onStatusChange(status: string) {
+    const app = this.selectedApplication?.Application;
+
+    // Clear other statuses
+    app.ApplicationAccepted = undefined;
+    app.ApplicationRejected = undefined;
+    app.ApplicationCancelled = undefined;
+
+    if (status === 'Accepted') {
+      app.ApplicationAccepted = {
+        AcceptDateTime: ' ',
+        DecisionMakerIin: ' '
+      };
+    } else if (status === 'Rejected') {
+      app.ApplicationRejected = {
+        RejectDateTime: ' ',
+        RejectReasonType: ' ',
+        DecisionMakerIin: ' '
+      };
+    } else if (status === 'Cancelled') {
+      app.ApplicationCancelled = {
+        CancelDateTime: ' ',
+        Note: ' ',
+        DecisionMakerIin: ' '
+      };
+    }
+  }
+
+
+
+  private createEmptyApplication(applicantType: 'Individual' | 'Corporate' | 'Entrepreneur'): Application {
+    const applicantBase: any = {
+      ApplicantNameRu: ' ',
+      ApplicantNameKz: ' ',
+      ApplicantXin: ' ',
+      ApplicantType: applicantType
+    };
+
+    if (applicantType === 'Individual') {
+      applicantBase.ApplicantIndividualInfo = {
+        DocumentType: ' ',
+        DocumentNumber: ' '
+      };
+    } else if (applicantType === 'Corporate') {
+      applicantBase.ApplicantCorporateInfo = {
+        FirstPersonIin: ' ',
+        FirstPersonFio: ' '
+      };
+    } else if (applicantType === 'Entrepreneur') {
+      applicantBase.ApplicantEntrepreneurInfo = {
+        Iin: ' ',
+        Fio: ' '
+      };
+    }
+
+    return {
+      Application: {
+        ApplicationNumber: ' ',
+        ApplicationStatus: 'Draft',
+        SentToOfficialsDateTime: new Date().toISOString(),
+        ApplicationYear: new Date().getFullYear(),
+        MeasureId: ' ',
+        InitialApplicationAmount: {
+          Amount: 0,
+          CurrencyType: ' '
+        },
+        Applicant: applicantBase,
+        ApplicationOfficialOrgInfo: {
+          Bin: ' ',
+          NameRu: ' ',
+          NameKz: ' '
+        },
+        ApplicationOperatorInfo: {
+          Bin: ' ',
+          NameRu: ' ',
+          NameKz: ' '
+        },
+        ApplicationAddress: {
+          OblArId: ' ',
+          RegionArId: ' '
+        },
+        Payments: [{
+          PaymentDate: ' ',
+          PaymentAmount: 0,
+          PaymentCurrencyType: ' ',
+          BudgetProgram: {
+            BudgetType: ' ',
+            BudgetProgramCode: ' ',
+            BudgetSubProgramCode: ' ',
+            Specific: ' '
+          }
+        }],
+        ApplicationCancelled: {
+          CancelDateTime: ' ',
+          Note: ' ',
+          DecisionMakerIin: ' '
+        },
+        ApplicationAccepted: {
+          AcceptDateTime: ' ',
+          DecisionMakerIin: ' '
+        },
+        ApplicationRejected: {
+          RejectDateTime: ' ',
+          RejectReasonType: ' ',
+          DecisionMakerIin: ' '
+        },
+        ApplicationPaid: {
+          FullPaidDateTime: ' ',
+          FullPaidAmountInTg: 0
+        },
+        ApplicationUrl: {
+          Url: ' '
+        },
+        toggle: 0
+      }
+    };
+  }
 
   onDelete(app: Application): void {
+    const appNumber = app.Application.ApplicationNumber;
     this.modal.confirm({
-      nzTitle: '',
-      nzContent: '',
-      nzOkText: 'Yes',
+      nzTitle: 'Удалить заявку',
+      nzContent: `Вы уверены, что хотите удалить заявку ${appNumber}?`,
+      nzOkText: 'Да',
       nzOkDanger: true,
       nzOnOk: () => {
-        this.applications = this.applications.filter(a => a.Application.ApplicationNumber !== app.Application.ApplicationNumber);
+        this.storageService.delete(appNumber);
+        this.notification.info('Удалено', `Заявка ${appNumber} удалена`);
+        this.loadApplications();
       },
-      nzCancelText: 'No'
+      nzCancelText: 'Нет'
     });
+  }
+  exportToJson(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const data = JSON.stringify(this.storageService.getAll(), null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `applications_${new Date().toISOString()}.json`;
+      document.body.appendChild(a);
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }
   }
 
   onEdit(app: Application): void {
@@ -281,20 +548,87 @@ export class ApplicationTableComponent implements OnInit {
   }
   applications: Application[] = [];
   size: NzButtonSize = 'large';
+  isAddingNew = false;
+  constructor(
+    private storageService: ApplicationStorageService,
+    private modal: NzModalService,
+    private notification: NzNotificationService,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private http: HttpClient,
+    private cdr: ChangeDetectorRef
+  ) {
 
-  constructor(private http: HttpClient, private modal: NzModalService) { }
+    this.applications = [];
+    this.filteredApplications = [];
+    this.sortedApplications = [];
+    this.displayApplications = []; // Explicit initialization
+  }
+  isLoading = false;
+  loadApplications(): void {
+    this.isLoading = true;
+    try {
+      const apps = this.storageService.getAll();
+
+      // Filter invalid data
+      this.applications = (apps || []).filter(app =>
+        app && app.Application && app.Application.ApplicationNumber
+      );
+
+      // this.filteredApplications = [...this.applications];
+      // this.sortedApplications = [...this.filteredApplications];
+      // this.applySorting(); // Ensure sorting is applied before paginating
+      // this.updateDisplayApplications();
+      this.applyFilter(); // handles filter, sorting, and updates displayApplications
+
+
+      if (this.applications.length === 0) {
+        this.notification.info('Информация', 'Нет сохраненных заявок');
+      }
+    } catch (error) {
+      console.error('Error loading applications:', error);
+      this.notification.error('Ошибка', 'Не удалось загрузить заявки');
+      this.applications = [];
+      this.filteredApplications = [];
+      this.sortedApplications = [];
+      this.displayApplications = [];
+    } finally {
+      this.isLoading = false;
+      this.cdr.detectChanges(); // Optional here — you're already calling it in updateDisplayApplications
+    }
+  }
 
   ngOnInit(): void {
-    this.http.get<Application[]>('assets/applications.json').subscribe({
-      next: (data) => {
-        this.applications = data;
-        this.filteredApplications = [...this.applications];
-        this.sortedApplications = [...this.applications];
-        this.totalApplications = this.applications.length;
-        this.updateDisplayApplications();
-      },
-      error: (err) => console.error('Failed to load applications', err)
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      // Проверяем, есть ли данные в localStorage
+      const storedData = this.storageService.getAll();
+
+      if (storedData.length === 0) {
+        // Загружаем данные из JSON-файла
+        this.http.get<Application[]>('assets/applications.json').subscribe({
+          next: (data) => {
+            // Сохраняем данные в localStorage
+            // localStorage.setItem('applications', JSON.stringify(data));
+            this.storageService.setAll(data);
+            // Загружаем данные в компонент
+            this.loadApplications();
+          },
+          error: (err) => {
+            console.error('Failed to load applications', err);
+            this.notification.error('Ошибка', 'Не удалось загрузить данные');
+            this.loadApplications(); // Загружаем пустой список
+          }
+        });
+      } else {
+        // Загружаем данные из localStorage
+        this.loadApplications();
+      }
+    } else {
+      this.applications = [];
+      this.filteredApplications = [];
+      this.sortedApplications = [];
+      this.displayApplications = [];
+      this.updateDisplayApplications();
+    }
   }
 
 
@@ -339,12 +673,16 @@ export class ApplicationTableComponent implements OnInit {
   isDrawerVisible2 = false;
 
   selectedApplication: any;
-  openDrawer(app: Application): void {
+  // selectedApplication: Application | null = null;
 
-    this.selectedApplication = app;
+  openDrawer(app: Application): void {
+    this.isAddingNew = false;
+    this.selectedApplication = JSON.parse(JSON.stringify(app));
     this.isDrawerVisible = true;
   }
+
   openDrawer2(app: Application): void {
+    this.isAddingNew = false;
     this.selectedApplication = app;
     this.isDrawerVisible2 = true;
   }
@@ -355,27 +693,34 @@ export class ApplicationTableComponent implements OnInit {
     this.isDrawerVisible2 = false;
 
     this.selectedApplication = null;
+    // this.isAddingNew = false;
   }
+
   saveChanges(): void {
-    console.log('Save clicked for:', this.selectedApplication);
-  }
-  confirmDelete(): void {
     if (!this.selectedApplication) return;
 
-    this.modal.confirm({
-      nzTitle: 'Delete Application',
-      nzContent: `Are you sure you want to delete application ${this.selectedApplication.Application.ApplicationNumber}?`,
-      nzOkText: 'Yes',
-      nzOkDanger: true,
-      nzOnOk: () => {
-        this.applications = this.applications.filter(
-          a => a.Application.ApplicationNumber !== this.selectedApplication!.Application.ApplicationNumber
-        );
-        this.applyFilter(); // Reapply filter after deletion
-        this.closeDrawer();
-      },
-      nzCancelText: 'No'
-    });
+    // Обработка пустого InitialApplicationAmount
+    const amount = this.selectedApplication.Application.InitialApplicationAmount ??= { Amount: 0, CurrencyType: '' };
+    if (amount && (!amount.Amount && !amount.CurrencyType)) {
+      this.selectedApplication.Application.InitialApplicationAmount = null;
+    }
+
+    if (this.isAddingNew) {
+      this.storageService.add(this.selectedApplication);
+      this.notification.success('Успешно', 'Заявка добавлена');
+    } else {
+      this.storageService.update(this.selectedApplication);
+      this.notification.success('Успешно', 'Заявка обновлена');
+    }
+
+    this.closeDrawer();
+    this.loadApplications();
+    this.notification.success('Успешно', 'Заявка сохранена');
+  }
+
+  confirmDelete(): void {
+    if (!this.selectedApplication) return;
+    this.onDelete(this.selectedApplication);
   }
 
 }

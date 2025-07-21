@@ -1,3 +1,111 @@
+select[name="ApplicationStatus"] {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  background-color: #f9f9f9;
+  color: #333;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg width='10' height='7' viewBox='0 0 10 7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23666' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 12px;
+}
+
+select[name="ApplicationStatus"]:hover {
+  border-color: #888;
+}
+
+select[name="ApplicationStatus"]:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+option {
+  padding: 0.5rem;
+}
+
+select[name="ApplicantType"],
+select[name="ApplicationStatus"] {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: 2px solid #ccc;
+  border-radius: 12px;
+  background-color: #fdfdfd;
+  color: #333;
+  appearance: none;
+  cursor: pointer;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg width='10' height='7' viewBox='0 0 10 7' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23666' stroke-width='2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 12px;
+}
+
+select[name="ApplicantType"]:hover,
+select[name="ApplicationStatus"]:hover {
+  border-color: #888;
+}
+
+select[name="ApplicantType"]:focus,
+select[name="ApplicationStatus"]:focus {
+  outline: none;
+  border-color: #28a745;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+}
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  /* margin-bottom: 20px; */
+  padding: 10px 0;
+}
+/* application-table.component.css */
+.header-actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 10px 0;
+  position: relative;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.application-table-container {
+  overflow: visible;
+}
+
+.header-actions button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+/* Стили для валидации */
+.ng-invalid.ng-touched input {
+  border-color: #ff4d4f;
+  box-shadow: 0 0 0 2px rgba(255, 77, 79, 0.2);
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+  .header-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .header-actions button {
+    width: 100%;
+  }
+}
+
+
 /* Table Container */
 .application-table-container {
   padding: 16px;
@@ -277,13 +385,6 @@
     content: none !important;
   }
 
-  /* Pagination adjustments */
-  .pagination-container {
-    padding: 12px 8px;
-    margin-top: 16px;
-    flex-wrap: wrap;
-  }
-
   /* Search container */
   .search-container {
     max-width: 100%;
@@ -304,10 +405,6 @@ th:hover {
 th nz-icon {
   margin-left: 5px;
 }
-
-
-
-
 
 .drawer-content {
   padding: 16px;
@@ -527,26 +624,25 @@ th nz-icon {
 
 .search-container {
   position: relative;
-  margin-bottom: 20px;
-  max-width: 400px;
-  float: left;
-  display: block;
+  flex: 1;
+  max-width: 300px;
 }
 
 .search-container input {
   width: 100%;
-  padding: 10px 15px 10px 40px;
-  border: 1px solid #d9d9d9;
-  border-radius: 4px;
+  padding: 8px 36px 8px 12px;
   font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
 }
 
 .search-container .search-icon {
   position: absolute;
-  left: 12px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  color: #bfbfbf;
+  color: #999;
+  font-size: 16px;
 }
 
 th {
@@ -577,7 +673,7 @@ th:hover {
   display: flex;
   justify-content: center;
   padding: 24px 0;
-  margin-top: 32px;
+  /* margin-top: 32px; */
   background: #f8f9fa;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -636,6 +732,7 @@ th:hover {
   }
 
   .pagination-container {
+    display: flex; /* ✅ add this */
     padding: 16px 12px;
   }
 
